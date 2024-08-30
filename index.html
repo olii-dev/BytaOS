@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BytaOS</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Moderustic:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="icons/bytaos.png">
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <img src="icons/byta-logo-black.png" alt="BytaOS Logo" class="menu-logo">
+        <div class="menu-item">File</div>
+        <div class="menu-item">Edit</div>
+        <div class="menu-item">View</div>
+        <div class="menu-item">Help</div>
+    </div>
+
+    <div class="desktop">
+        <!-- Dock -->
+        <div class="dock">
+            <div class="dock-icons">
+                <div class="dock-icon-container" data-name="Launcher">
+                    <img src="icons/launcher.png" alt="Launcher" class="dock-icon">
+                    <div class="launcher-status-dot status-dot"></div>
+                </div>
+                <div class="dock-icon-container" data-name="Terminal">
+                    <img src="icons/apps/terminal.png" alt="Terminal" class="dock-icon">
+                    <div class="status-dot"></div>
+                </div>
+                <div class="dock-icon-container" data-name="Notes">
+                    <img src="icons/apps/notes.png" alt="Notes" class="dock-icon">
+                    <div class="notes-status-dot status-dot"></div>
+                </div>
+            </div>
+            <span class="app-name" id="app-name"></span>
+            <div class="taskbar-clock-container">
+                <div class="taskbar-clock">
+                    <!-- Clock -->
+                    <span id="clock"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Icons -->
+        <div class="desktop-icons">
+            <div class="icon" onclick="openWindow('Bin')">
+                <img src="icons/apps/bin.png" alt="Bin">
+                <span>Bin</span>
+            </div>
+        </div>
+
+        <!-- Terminal Window -->
+        <div class="window" id="terminal-window">
+            <div class="window-header" onmousedown="startDrag(event, 'terminal-window')">
+                <span class="window-title">Terminal</span>
+                <button class="close-button" onclick="closeWindow('Terminal')">&times;</button>
+            </div>
+            <div class="window-body">
+                <div id="terminal-output"></div>
+                <input type="text" id="terminal-input" onkeypress="handleTerminalInput(event)">
+            </div>
+        </div>
+
+<!-- Launcher Window -->
+<div class="launcher-window" id="launcher-window">
+    <div class="launcher-header">
+        <span class="window-title">Launcher</span>
+        <button class="close-button" onclick="closeWindow('Launcher')">&times;</button>
+    </div>
+    <div class="launcher-body">
+        <input type="text" id="search-bar" class="launcher-search" placeholder="Search apps...">
+        <ul id="search-results" class="search-results"></ul>
+        <!-- Add launcher options here -->
+    </div>
+</div>
+
+    <script src="bytaos.js"></script>
+</body>
+</html>

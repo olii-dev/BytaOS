@@ -1,2 +1,2 @@
 # BytaOS
-The Most Secure &amp; Private WebOS In Existence.
+The Most Secure &amp; Private InteretOS In Existence. With BytaOS
