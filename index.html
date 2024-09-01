@@ -6,7 +6,7 @@
     <title>BytaOS</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Moderustic:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="icons/bytaos.png">
+    <link rel="icon" href="icons/byta-logo.png">
 </head>
 <body>
     <!-- Menu Bar -->
@@ -28,7 +28,7 @@
                 </div>
                 <div class="dock-icon-container" data-name="Terminal">
                     <img src="icons/apps/terminal.png" alt="Terminal" class="dock-icon">
-                    <div class="status-dot"></div>
+                    <div class="terminal-status-dot status-dot"></div>
                 </div>
                 <div class="dock-icon-container" data-name="Notes">
                     <img src="icons/apps/notes.png" alt="Notes" class="dock-icon">
@@ -63,6 +63,24 @@
                 <input type="text" id="terminal-input" onkeypress="handleTerminalInput(event)">
             </div>
         </div>
+
+        <!-- Notes Window -->
+        <div class="window" id="notes-window">
+            <div class="window-header" onmousedown="startDrag(event, 'notes-window')">
+                <span class="window-title">Notes</span>
+                <button class="close-button" onclick="closeWindow('Notes')">&times;</button>
+            </div>
+            <div class="window-body">
+                <input type="text" id="note-title" placeholder="Title" class="notes-title-input">
+                <textarea id="note-content" placeholder="Write your note here..." class="notes-content-input"></textarea>
+                <div class="notes-actions">
+                    <button onclick="saveNote()">Save Note</button>
+                    <button onclick="deleteNote()">Delete Note</button>
+                </div>
+                <ul id="notes-list"></ul>
+            </div>
+        </div>
+        
 
 <!-- Launcher Window -->
 <div class="launcher-window" id="launcher-window">

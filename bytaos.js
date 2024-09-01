@@ -119,7 +119,6 @@ document.addEventListener('mouseup', () => {
     }
 });
 
-
 // Dock App Name
 const dockIcons = document.querySelectorAll('.dock-icon-container');
 const appNameElement = document.getElementById('app-name');
@@ -175,4 +174,115 @@ document.getElementById('search-bar').addEventListener('input', function () {
     if (results.length === 0 && query.length > 0) {
         resultsList.innerHTML = '<li>No results found</li>';
     }
+});
+
+// Notes App Functions
+
+function saveNote() {
+    const title = document.getElementById('note-title').value;
+    const content = document.getElementById('note-content').value;
+    if (title && content) {
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        const existingNoteIndex = notes.findIndex(note => note.title === title);
+        
+        if (existingNoteIndex !== -1) {
+            // Replace the content of the existing note
+            notes[existingNoteIndex].content = content;
+        } else {
+            // Add a new note
+            notes.push({ title, content });
+        }
+
+        localStorage.setItem('notes', JSON.stringify(notes));
+        loadNotes();
+        clearNoteFields();
+    }
+}
+
+function deleteNote() {
+    const title = document.getElementById('note-title').value;
+    if (title) {
+        let notes = JSON.parse(localStorage.getItem('notes')) || [];
+        notes = notes.filter(note => note.title !== title);
+        localStorage.setItem('notes', JSON.stringify(notes));
+        loadNotes();
+        clearNoteFields();
+    }
+}
+
+function loadNotes() {
+    const notesList = document.getElementById('notes-list');
+    notesList.innerHTML = '';
+    const notes = JSON.parse(localStorage.getItem('notes')) || [];
+    notes.forEach(note => {
+        const li = document.createElement('li');
+        li.innerText = note.title;
+        li.onclick = () => displayNoteContent(note);
+        notesList.appendChild(li);
+    });
+}
+
+function displayNoteContent(note) {
+    document.getElementById('note-title').value = note.title;
+    document.getElementById('note-content').value = note.content;
+}
+
+function clearNoteFields() {
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-content').value = '';
+}
+
+// Load notes when the Notes window is opened
+document.getElementById('notes-window').addEventListener('load', loadNotes);
+
+// Make windows draggable
+function makeDraggable(element) {
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    element.querySelector('.title-bar').addEventListener('mousedown', (e) => {
+        isDragging = true;
+        offsetX = e.clientX - element.getBoundingClientRect().left;
+        offsetY = e.clientY - element.getBoundingClientRect().top;
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.removeEventListener('mousemove', onMouseMove);
+        });
+    });
+
+    function onMouseMove(e) {
+        if (isDragging) {
+            element.style.left = `${e.clientX - offsetX}px`;
+            element.style.top = `${e.clientY - offsetY}px`;
+        }
+    }
+}
+
+// Let windows be resizable
+function makeResizable(element) {
+    const resizer = element.querySelector('.resizer');
+    let startX, startY, startWidth, startHeight;
+
+    resizer.addEventListener('mousedown', (e) => {
+        startX = e.clientX;
+        startY = e.clientY;
+        startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
+        startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', () => {
+            document.removeEventListener('mousemove', resize);
+        });
+    });
+
+    function resize(e) {
+        element.style.width = startWidth + e.clientX - startX + 'px';
+        element.style.height = startHeight + e.clientY - startY + 'px';
+    }
+}
+
+// Apply dragging and resizing to all windows
+document.querySelectorAll('.window').forEach(windowElement => {
+    makeDraggable(windowElement);
+    makeResizable(windowElement);
 });
