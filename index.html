@@ -34,6 +34,10 @@
                     <img src="icons/apps/notes.png" alt="Notes" class="dock-icon">
                     <div class="notes-status-dot status-dot"></div>
                 </div>
+                <div class="dock-icon-container" data-name="Files">
+                    <img src="icons/apps/folder.png" alt="Files" class="dock-icon">
+                    <div class="files-status-dot status-dot"></div>
+                </div>
             </div>
             <span class="app-name" id="app-name"></span>
             <div class="taskbar-clock-container">
@@ -64,23 +68,22 @@
             </div>
         </div>
 
-        <!-- Notes Window -->
-        <div class="window" id="notes-window">
-            <div class="window-header" onmousedown="startDrag(event, 'notes-window')">
-                <span class="window-title">Notes</span>
-                <button class="close-button" onclick="closeWindow('Notes')">&times;</button>
-            </div>
-            <div class="window-body">
-                <input type="text" id="note-title" placeholder="Title" class="notes-title-input">
-                <textarea id="note-content" placeholder="Write your note here..." class="notes-content-input"></textarea>
-                <div class="notes-actions">
-                    <button onclick="saveNote()">Save Note</button>
-                    <button onclick="deleteNote()">Delete Note</button>
-                </div>
-                <ul id="notes-list"></ul>
-            </div>
+<!-- Notes Window -->
+<div class="window" id="notes-window">
+    <div class="window-header" onmousedown="startDrag(event, 'notes-window')">
+        <span class="window-title">Notes</span>
+        <button class="close-button" onclick="closeWindow('Notes')">&times;</button>
+    </div>
+    <div class="window-body">
+        <input type="text" id="note-title" placeholder="Title" class="notes-title-input">
+        <textarea id="note-content" placeholder="Write your note here..." class="notes-content-input"></textarea>
+        <div class="notes-actions">
+            <button class="button-3d" onclick="saveNote()">Save Note</button>
+            <button class="button-3d" onclick="deleteNote()">Delete Note</button>
         </div>
-        
+        <ul id="notes-list"></ul>
+    </div>
+</div>
 
 <!-- Launcher Window -->
 <div class="launcher-window" id="launcher-window">
@@ -93,6 +96,19 @@
         <ul id="search-results" class="search-results"></ul>
         <!-- Add launcher options here -->
     </div>
+</div>
+
+<!-- Files Window -->
+<div class="window" id="files-window" style="display:none;">
+    <div class="window-header">
+        <span>Files</span>
+        <button class="close-button" onclick="closeWindow('Files')">&times;</button>
+    </div>
+    <div class="window-body">
+        <button class="button-3d" onclick="createFile()">Create New File</button>
+        <ul id="files-list"></ul>
+    </div>
+    
 </div>
 
     <script src="bytaos.js"></script>

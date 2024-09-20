@@ -187,8 +187,8 @@ body, html {
 /* Windows */
 .window {
     position: absolute;
-    top: 100px;
-    left: 100px;
+    top: 36.5%;
+    left: 36%;
     width: 500px;
     height: 350px;
     background-color: #f5f5f5;
@@ -203,10 +203,11 @@ body, html {
 /* Launcher Window */
 .launcher-window {
     position: absolute;
-    top: 350px;
-    left: 735px;
+    top: 50%;
+    left: 50%;
     width: 500px;
     height: 350px;
+    transform: translate(-50%, -50%);
     border-radius: 10px;
     display: none;
     flex-direction: column;
@@ -303,6 +304,13 @@ body, html {
     border-bottom-right-radius: 10px;
 }
 
+
+.launcher-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px; /* Add space between the icon and text */
+}
+
 #terminal-output {
     height: 80%;
     overflow-y: auto;
@@ -359,6 +367,18 @@ body, html {
     border-radius: 50%;
     display: none;
 }
+ 
+.dock-icon-container .files-status-dot {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: grey;
+    border-radius: 50%;
+    display: none;
+}
 
 /* Notes Window */
 .notes-title-input, .notes-content-input {
@@ -376,7 +396,7 @@ body, html {
     margin-bottom: 10px;
 }
 
-.notes-actions button {
+.button-3d {
     padding: 10px 20px;
     background-color: #333;
     color: white;
@@ -390,24 +410,31 @@ body, html {
     box-shadow: 0px 4px 0px rgba(0, 0, 0, 0.5), 0px 8px 15px rgba(0, 0, 0, 0.3);
 }
 
-.notes-actions button:hover {
+.button-3d:hover {
     background-color: #555;
     border-color: #777;
     box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.3), 0px 6px 10px rgba(0, 0, 0, 0.2);
     transform: translateY(2px);
 }
 
-.notes-actions button:active {
+.button-3d:active {
     background-color: #444;
     border-color: #666;
     box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.3), 0px 4px 8px rgba(0, 0, 0, 0.2);
     transform: translateY(4px);
 }
 
+
 #notes-list {
     list-style-type: none;
     padding: 0;
+    margin: 0;
+    max-height: 200px; /* Adjust the height as needed */
+    overflow-y: auto;  /* Enables vertical scrolling */
+    border: 1px solid #ddd;
+    border-radius: 5px;
 }
+
 
 #notes-list li {
     margin-bottom: 10px;
@@ -416,4 +443,16 @@ body, html {
     border: 1px solid #ddd;
     border-radius: 5px;
     cursor: pointer;
+}
+
+/*Files*/
+.button-clear {
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.button-icon {
+    width: 20px;
+    height: 20px;
 }

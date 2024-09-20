@@ -10,6 +10,16 @@ function openWindow(name) {
         if (icon) {
             icon.style.display = 'block'; // Show the dot
         }
+
+        // Load files when Files window is opened
+        if (name === "Files") {
+            listFiles();
+        }
+
+        // Load apps when Launcher window is opened
+        if (name === "Launcher") {
+            loadAppList();
+        }
     }
 }
 
@@ -26,6 +36,58 @@ function closeWindow(name) {
     } else {
         console.error(`Element with ID ${name.toLowerCase()}-window not found.`);
     }
+}
+
+function getFileSystem() {
+    return JSON.parse(localStorage.getItem('fileSystem')) || [];
+}
+
+function setFileSystem(files) {
+    localStorage.setItem('fileSystem', JSON.stringify(files));
+}
+
+function listFiles() {
+    const filesList = document.getElementById('files-list');
+    filesList.innerHTML = '';
+    const fileSystem = getFileSystem();
+    fileSystem.forEach((file, index) => {
+        const fileItem = document.createElement('li');
+        fileItem.textContent = file.name;
+        fileItem.onclick = () => editFile(index);
+        filesList.appendChild(fileItem);
+    });
+}
+
+function createFile() {
+    const fileName = prompt("Enter new file name:");
+    if (fileName) {
+        let fileSystem = getFileSystem();
+        if (fileSystem.some(file => file.name === fileName)) {
+            alert("File already exists!");
+            return;
+        }
+        fileSystem.push({ name: fileName, content: "" });
+        setFileSystem(fileSystem);
+        listFiles();
+    }
+}
+
+function editFile(index) {
+    let fileSystem = getFileSystem();
+    const file = fileSystem[index];
+    const newContent = prompt(`Edit content of ${file.name}:`, file.content);
+    if (newContent !== null) {
+        fileSystem[index].content = newContent;
+        setFileSystem(fileSystem);
+        listFiles();
+    }
+}
+
+function deleteFile(index) {
+    let fileSystem = getFileSystem();
+    fileSystem.splice(index, 1);
+    setFileSystem(fileSystem);
+    listFiles();
 }
 
 // Handle terminal input
@@ -82,10 +144,8 @@ document.addEventListener('mousedown', (e) => {
         startLeft = rect.left;
         startTop = rect.top;
 
-        // Add dragging class for potential visual feedback
         currentWindow.classList.add('dragging');
 
-        // Prevent default to avoid text selection or other default actions
         e.preventDefault();
     }
 });
@@ -98,7 +158,6 @@ document.addEventListener('mousemove', (e) => {
         let newLeft = startLeft + deltaX;
         let newTop = startTop + deltaY;
 
-        // Ensure the window stays within the viewport boundaries
         const windowWidth = currentWindow.offsetWidth;
         const windowHeight = currentWindow.offsetHeight;
         const screenWidth = window.innerWidth;
@@ -135,9 +194,8 @@ dockIcons.forEach(icon => {
     });
 });
 
-// Function to handle dock icon click
 function handleDockIconClick(appName) {
-    openWindow(appName); // This calls the openWindow function with the app name
+    openWindow(appName);  // This opens the selected app
 }
 
 // Add event listeners to dock icons
@@ -149,12 +207,12 @@ document.querySelectorAll('.dock-icon-container').forEach(icon => {
 // Launcher Search
 // Array of apps for search
 const apps = [
-    { name: 'Launcher', id: 'launcher-window' },
-    { name: 'Terminal', id: 'terminal-window' },
-    { name: 'Bin', id: 'bin-window' }
+    { name: 'Launcher', id: 'launcher-window', icon: 'icons/launcher.png' },
+    { name: 'Terminal', id: 'terminal-window', icon: 'icons/apps/terminal.png' },
+    { name: 'Files', id: 'files-window', icon: 'icons/apps/folder.png' },
+    { name: 'Bin', id: 'bin-window', icon: 'icons/apps/bin.png' }
 ];
 
-// Search functionality
 document.getElementById('search-bar').addEventListener('input', function () {
     const query = this.value.toLowerCase();
     const results = apps.filter(app => app.name.toLowerCase().startsWith(query));
@@ -164,7 +222,7 @@ document.getElementById('search-bar').addEventListener('input', function () {
 
     results.forEach(app => {
         const listItem = document.createElement('li');
-        listItem.textContent = app.name;
+        listItem.innerHTML = `<img src="${app.icon}" alt="${app.name} icon" class="launcher-icon"><span>${app.name}</span>`;
         listItem.addEventListener('click', () => {
             openWindow(app.name);
         });
@@ -175,6 +233,7 @@ document.getElementById('search-bar').addEventListener('input', function () {
         resultsList.innerHTML = '<li>No results found</li>';
     }
 });
+
 
 // Notes App Functions
 
@@ -286,3 +345,34 @@ document.querySelectorAll('.window').forEach(windowElement => {
     makeDraggable(windowElement);
     makeResizable(windowElement);
 });
+
+// Dummy file system as an array of file names
+const fileSystem = [
+    "Document1.txt",
+    "Document2.txt",
+    "Image1.png",
+    "Folder1"
+];
+
+function listFiles() {
+    const filesList = document.getElementById('files-list');
+    filesList.innerHTML = '';
+    fileSystem.forEach(file => {
+        const fileItem = document.createElement('li');
+        fileItem.textContent = file;
+        fileItem.onclick = () => openFile(file);
+        filesList.appendChild(fileItem);
+    });
+}
+
+function openFile(fileName) {
+    console.log("Opening:", fileName);
+}
+
+function deleteFile(fileName) {
+    const index = fileSystem.indexOf(fileName);
+    if (index !== -1) {
+        fileSystem.splice(index, 1);
+        listFiles();
+    }
+}
