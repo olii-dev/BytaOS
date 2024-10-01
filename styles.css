@@ -380,6 +380,18 @@ body, html {
     display: none;
 }
 
+.dock-icon-container .settings-status-dot {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: grey;
+    border-radius: 50%;
+    display: none;
+}
+
 /* Notes Window */
 .notes-title-input, .notes-content-input {
     width: 95%;
@@ -424,6 +436,33 @@ body, html {
     transform: translateY(4px);
 }
 
+/* Light Mode */
+body.light {
+    background-color: #ffffff; /* White background */
+    color: #000000; /* Black text */
+}
+
+.window.light {
+    background-color: #f5f5f5; /* Light gray window background */
+    color: #333333; /* Dark text inside windows */
+}
+
+.button-3d.light {
+    background-color: #dddddd; /* Light button background */
+    color: #333333; /* Dark text on buttons */
+    border-color: #cccccc;
+}
+
+/* Dark Mode */
+body.dark {
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+}
+
+.window.dark {
+    background-color: #333333; /* Dark window background */
+    color: #f5f5f5; /* Light text inside windows */
+}
 
 #notes-list {
     list-style-type: none;
@@ -455,4 +494,44 @@ body, html {
 .button-icon {
     width: 20px;
     height: 20px;
+}
+
+.settings-option {
+    display: flex;
+    justify-content: space-between; /* Align label and select on opposite sides */
+    align-items: center; /* Center vertically */
+}
+
+.settings-option label {
+    font-size: 14px;
+    color: #333;
+}
+
+body.light {
+    background-color: #ffffff;
+    color: #ffffff;
+}
+
+body.dark {
+    background-color: #000000;
+    color: #000000;
+}
+
+.window.light {
+    background-color: #f5f5f5;
+}
+
+.window.dark {
+    background-color: #333333;
+    color: white;
+}
+
+.taskbar.light {
+    background-color: rgba(255, 255, 255, 0.8); /* Light taskbar background */
+    color: #000000; /* Dark taskbar text */
+}
+
+.taskbar.dark {
+    background-color: rgba(0, 0, 0, 0.8); /* Dark taskbar background */
+    color: #ffffff; /* Light taskbar text */
 }

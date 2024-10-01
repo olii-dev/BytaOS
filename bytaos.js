@@ -119,11 +119,17 @@ function updateClock() {
     const minutes = now.getMinutes().toString().padStart(2, '0');
     const seconds = now.getSeconds().toString().padStart(2, '0');
 
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12; // Convert to 12-hour format, with 12 for midnight and noon
-    hours = hours.toString().padStart(2, '0');
+    // Retrieve clock format from localStorage
+    const clockFormat = localStorage.getItem('clockFormat') || '12'; // Default to 12-hour format
 
-    document.getElementById('clock').textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+    if (clockFormat === '12') {
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12; // Convert to 12-hour format
+        document.getElementById('clock').textContent = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+    } else {
+        // 24-hour format
+        document.getElementById('clock').textContent = `${hours.toString().padStart(2, '0')}:${minutes}:${seconds}`;
+    }
 }
 
 setInterval(updateClock, 1000);
@@ -210,6 +216,7 @@ const apps = [
     { name: 'Launcher', id: 'launcher-window', icon: 'icons/launcher.png' },
     { name: 'Terminal', id: 'terminal-window', icon: 'icons/apps/terminal.png' },
     { name: 'Files', id: 'files-window', icon: 'icons/apps/folder.png' },
+    { name: 'Settings', id: 'settings-window', icon: 'icons/apps/settings.png' },
     { name: 'Bin', id: 'bin-window', icon: 'icons/apps/bin.png' }
 ];
 
@@ -376,3 +383,50 @@ function deleteFile(fileName) {
         listFiles();
     }
 }
+
+// Settings
+function openSettings() {
+    const settingsWindow = document.getElementById('settings-window');
+    settingsWindow.style.display = 'flex';
+    loadSettings();  // Load current settings when the window opens
+}
+
+function closeSettings() {
+    const settingsWindow = document.getElementById('settings-window');
+    settingsWindow.style.display = 'none';
+}
+
+function saveSettings() {
+    const selectedTheme = document.getElementById('theme-select').value; // Get selected theme
+    const selectedClockFormat = document.getElementById('clock-select').value; // Get selected clock format
+
+    localStorage.setItem('theme', selectedTheme); // Save theme to localStorage
+    localStorage.setItem('clockFormat', selectedClockFormat); // Save clock format to localStorage
+
+    applyTheme(selectedTheme); // Apply the selected theme immediately
+    updateClock(); // Update clock immediately after saving settings
+}
+
+function loadSettings() {
+    const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light theme
+    const savedClockFormat = localStorage.getItem('clockFormat') || '12'; // Default to 12-hour format
+
+    document.getElementById('theme-select').value = savedTheme;
+    document.getElementById('clock-select').value = savedClockFormat; // Load saved clock format
+
+    applyTheme(savedTheme); // Apply the saved theme
+}
+
+function applyTheme(theme) {
+    document.body.className = ''; // Clear any existing class
+    document.body.classList.add(theme); // Add the selected theme class (either 'light' or 'dark')
+}
+
+const settingsIcon = document.createElement('div');
+settingsIcon.className = 'dock-icon-container';
+settingsIcon.setAttribute('data-name', 'Settings');
+settingsIcon.innerHTML = `<img src="icons/settings.png" alt="Settings" class="dock-icon">`;
+settingsIcon.addEventListener('click', openSettings);
+document.querySelector('.dock-icons').appendChild(settingsIcon);
+
+document.addEventListener('DOMContentLoaded', loadSettings);

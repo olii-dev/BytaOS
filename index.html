@@ -38,6 +38,10 @@
                     <img src="icons/apps/folder.png" alt="Files" class="dock-icon">
                     <div class="files-status-dot status-dot"></div>
                 </div>
+                <div class="dock-icon-container" data-name="Settings">
+                    <img src="icons/apps/settings.png" alt="Settings" class="dock-icon">
+                    <div class="settings-status-dot status-dot"></div>
+                </div>
             </div>
             <span class="app-name" id="app-name"></span>
             <div class="taskbar-clock-container">
@@ -111,6 +115,47 @@
     
 </div>
 
+<!-- Settings Window -->
+<div class="window" id="settings-window" style="display:none;">
+    <div class="window-header">
+        <span>Settings</span>
+        <button class="close-button" onclick="closeWindow('Settings')">&times;</button>
+    </div>
+    <div class="window-body">
+        <div class="settings-option">
+            <label for="theme-select">Theme:</label>
+            <select class="button-3d" id="theme-select">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </div>
+        <br>
+        <div class="settings-option">
+            <label for="clock-select">Clock:</label>
+            <select class="button-3d" id="clock-select">
+                <option value="12">12 Hour</option>
+                <option value="24">24 Hour</option>
+            </select>
+        </div>
+        <br>
+        <div class="settings-actions">
+            <button class="button-3d save-button" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Bin Window -->
+<div class="window" id="bin-window" style="display:none;">
+    <div class="window-header">
+        <span>Bin</span>
+        <button class="close-button" onclick="closeWindow('Bin')">&times;</button>
+    </div>
+    <div class="window-body">
+        <ul id="bin-list"></ul>
+    </div>
+</div>
+    </div>
+    
     <script src="bytaos.js"></script>
 </body>
 </html>
