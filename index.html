@@ -98,7 +98,6 @@
     <div class="launcher-body">
         <input type="text" id="search-bar" class="launcher-search" placeholder="Search apps...">
         <ul id="search-results" class="search-results"></ul>
-        <!-- Add launcher options here -->
     </div>
 </div>
 
@@ -109,10 +108,9 @@
         <button class="close-button" onclick="closeWindow('Files')">&times;</button>
     </div>
     <div class="window-body">
-        <button class="button-3d" onclick="createFile()">Create New File</button>
-        <ul id="files-list"></ul>
+        <button class="button-3d box" onclick="createFile()">Create New File</button>
+        <ul id="files-list" class="box"></ul>
     </div>
-    
 </div>
 
 <!-- Settings Window -->
@@ -122,6 +120,7 @@
         <button class="close-button" onclick="closeWindow('Settings')">&times;</button>
     </div>
     <div class="window-body">
+        <!-- Theme Setting -->
         <div class="settings-option">
             <label for="theme-select">Theme:</label>
             <select class="button-3d" id="theme-select">
@@ -130,6 +129,8 @@
             </select>
         </div>
         <br>
+
+        <!-- Clock Setting -->
         <div class="settings-option">
             <label for="clock-select">Clock:</label>
             <select class="button-3d" id="clock-select">
@@ -138,6 +139,14 @@
             </select>
         </div>
         <br>
+
+        <!-- About Section -->
+        <div class="settings-option">
+            <p style="text-align: center;" style="font-size: 17px;">BytaOS is your private and secure desktop in the web!<br>© 2025 BytaOS</p>
+        </div>
+        <br>
+
+        <!-- Save Settings Button -->
         <div class="settings-actions">
             <button class="button-3d save-button" onclick="saveSettings()">Save Settings</button>
         </div>

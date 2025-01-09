@@ -1,22 +1,19 @@
-// BytaOS Core Functions
+// BytaOS
 
 function openWindow(name) {
     const windowElement = document.getElementById(`${name.toLowerCase()}-window`);
     if (windowElement) {
         windowElement.style.display = 'flex';
         
-        // Add the status dot to the dock icon
         const icon = document.querySelector(`.dock-icon-container[data-name="${name}"] .status-dot`);
         if (icon) {
-            icon.style.display = 'block'; // Show the dot
+            icon.style.display = 'block';
         }
 
-        // Load files when Files window is opened
         if (name === "Files") {
             listFiles();
         }
 
-        // Load apps when Launcher window is opened
         if (name === "Launcher") {
             loadAppList();
         }
@@ -28,10 +25,9 @@ function closeWindow(name) {
     if (windowElement) {
         windowElement.style.display = 'none';
         
-        // Remove the status dot from the dock icon
         const icon = document.querySelector(`.dock-icon-container[data-name="${name}"] .status-dot`);
         if (icon) {
-            icon.style.display = 'none'; // Hide the dot
+            icon.style.display = 'none';
         }
     } else {
         console.error(`Element with ID ${name.toLowerCase()}-window not found.`);
@@ -217,7 +213,8 @@ const apps = [
     { name: 'Terminal', id: 'terminal-window', icon: 'icons/apps/terminal.png' },
     { name: 'Files', id: 'files-window', icon: 'icons/apps/folder.png' },
     { name: 'Settings', id: 'settings-window', icon: 'icons/apps/settings.png' },
-    { name: 'Bin', id: 'bin-window', icon: 'icons/apps/bin.png' }
+    { name: 'Bin', id: 'bin-window', icon: 'icons/apps/bin.png' },
+    { name: 'Notes', id: 'notes-window', icon: 'icons/apps/notes.png' },
 ];
 
 document.getElementById('search-bar').addEventListener('input', function () {
@@ -347,41 +344,32 @@ function makeResizable(element) {
     }
 }
 
-// Apply dragging and resizing to all windows
 document.querySelectorAll('.window').forEach(windowElement => {
     makeDraggable(windowElement);
     makeResizable(windowElement);
 });
 
-// Dummy file system as an array of file names
-const fileSystem = [
-    "Document1.txt",
-    "Document2.txt",
-    "Image1.png",
-    "Folder1"
-];
-
 function listFiles() {
     const filesList = document.getElementById('files-list');
     filesList.innerHTML = '';
-    fileSystem.forEach(file => {
+    const fileSystem = getFileSystem();
+    fileSystem.forEach((file, index) => {
         const fileItem = document.createElement('li');
-        fileItem.textContent = file;
-        fileItem.onclick = () => openFile(file);
+
+        fileItem.textContent = file.name;
+        fileItem.onclick = () => editFile(index);
+
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = "Delete";
+        deleteButton.onclick = (e) => {
+            e.stopPropagation();
+            deleteFile(index);
+        };
+        deleteButton.classList.add('delete-button');
+        fileItem.appendChild(deleteButton);
+
         filesList.appendChild(fileItem);
     });
-}
-
-function openFile(fileName) {
-    console.log("Opening:", fileName);
-}
-
-function deleteFile(fileName) {
-    const index = fileSystem.indexOf(fileName);
-    if (index !== -1) {
-        fileSystem.splice(index, 1);
-        listFiles();
-    }
 }
 
 // Settings
@@ -397,29 +385,29 @@ function closeSettings() {
 }
 
 function saveSettings() {
-    const selectedTheme = document.getElementById('theme-select').value; // Get selected theme
-    const selectedClockFormat = document.getElementById('clock-select').value; // Get selected clock format
+    const selectedTheme = document.getElementById('theme-select').value;
+    const selectedClockFormat = document.getElementById('clock-select').value;
 
-    localStorage.setItem('theme', selectedTheme); // Save theme to localStorage
-    localStorage.setItem('clockFormat', selectedClockFormat); // Save clock format to localStorage
+    localStorage.setItem('theme', selectedTheme);
+    localStorage.setItem('clockFormat', selectedClockFormat);
 
-    applyTheme(selectedTheme); // Apply the selected theme immediately
-    updateClock(); // Update clock immediately after saving settings
+    applyTheme(selectedTheme);
+    updateClock();
 }
 
-function loadSettings() {
-    const savedTheme = localStorage.getItem('theme') || 'light'; // Default to light theme
-    const savedClockFormat = localStorage.getItem('clockFormat') || '12'; // Default to 12-hour format
+    function loadSettings() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedClockFormat = localStorage.getItem('clockFormat') || '12';
 
     document.getElementById('theme-select').value = savedTheme;
-    document.getElementById('clock-select').value = savedClockFormat; // Load saved clock format
+    document.getElementById('clock-select').value = savedClockFormat;
 
-    applyTheme(savedTheme); // Apply the saved theme
+    applyTheme(savedTheme);
 }
 
 function applyTheme(theme) {
-    document.body.className = ''; // Clear any existing class
-    document.body.classList.add(theme); // Add the selected theme class (either 'light' or 'dark')
+    document.body.className = '';
+    document.body.classList.add(theme);
 }
 
 const settingsIcon = document.createElement('div');
