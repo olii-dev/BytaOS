@@ -38,6 +38,10 @@
                     <img src="icons/apps/folder.png" alt="Files" class="dock-icon">
                     <div class="files-status-dot status-dot"></div>
                 </div>
+                <div class="dock-icon-container" data-name="Calendar">
+                    <img src="icons/apps/calendar.svg" alt="Calendar" class="dock-icon">
+                    <div class="calendar-status-dot status-dot"></div>
+                </div>
                 <div class="dock-icon-container" data-name="Settings">
                     <img src="icons/apps/settings.png" alt="Settings" class="dock-icon">
                     <div class="settings-status-dot status-dot"></div>
@@ -80,11 +84,17 @@
     </div>
     <div class="window-body">
         <input type="text" id="note-title" placeholder="Title" class="notes-title-input">
-        <textarea id="note-content" placeholder="Write your note here..." class="notes-content-input"></textarea>
+        <input type="hidden" id="note-content-hidden">
+        <div id="note-content" contenteditable="true" class="notes-content-input"></div>
+        <input type="text" id="note-tags" placeholder="Tags (comma-separated)" class="notes-title-input">
         <div class="notes-actions">
+            <button class="button-3d" onclick="formatText('bold')">Bold</button>
+            <button class="button-3d" onclick="formatText('italic')">Italic</button>
+            <button class="button-3d" onclick="formatText('underline')">Underline</button>
             <button class="button-3d" onclick="saveNote()">Save Note</button>
             <button class="button-3d" onclick="deleteNote()">Delete Note</button>
         </div>
+        <input type="text" id="note-search" placeholder="Search notes..." class="notes-title-input">
         <ul id="notes-list"></ul>
     </div>
 </div>
@@ -111,6 +121,15 @@
         <button class="button-3d box" onclick="createFile()">Create New File</button>
         <ul id="files-list" class="box"></ul>
     </div>
+</div>
+
+<!-- Calendar Window -->
+<div class="window" id="calendar-window" style="display:none;">
+    <div class="window-header">
+        <span>Calendar</span>
+        <button class="close-button" onclick="closeWindow('Calendar')">&times;</button>
+    </div>
+    <div class="window-body" id="calendar-body"></div>
 </div>
 
 <!-- Settings Window -->
@@ -163,8 +182,7 @@
         <ul id="bin-list"></ul>
     </div>
 </div>
-    </div>
-    
+
     <script src="bytaos.js"></script>
 </body>
 </html>

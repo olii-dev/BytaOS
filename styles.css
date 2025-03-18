@@ -304,7 +304,6 @@ body, html {
     border-bottom-right-radius: 10px;
 }
 
-
 .launcher-icon {
     width: 24px;
     height: 24px;
@@ -378,7 +377,7 @@ body, html {
     border-radius: 50%;
     display: none;
 }
- 
+
 .dock-icon-container .files-status-dot {
     position: absolute;
     bottom: -3px;
@@ -392,6 +391,18 @@ body, html {
 }
 
 .dock-icon-container .settings-status-dot {
+    position: absolute;
+    bottom: -3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    background-color: grey;
+    border-radius: 50%;
+    display: none;
+}
+
+.dock-icon-container .calendar-status-dot {
     position: absolute;
     bottom: -3px;
     left: 50%;
@@ -485,7 +496,6 @@ body.dark {
     border-radius: 5px;
 }
 
-
 #notes-list li {
     margin-bottom: 10px;
     padding: 10px;
@@ -569,4 +579,75 @@ body.dark {
 .delete-button:active {
     transform: translateY(1px);
     box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
+}
+
+.file-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+}
+
+.back-button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    border-radius: 5px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-left: 5px;
+}
+
+.back-button:hover {
+    background-color: #555;
+    transform: translateY(-2px);
+    box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.back-button:active {
+    transform: translateY(1px);
+    box-shadow: 0px 3px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Calendar */
+.calendar-header {
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+}
+
+.calendar-day {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    background-color: #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.calendar-day.empty {
+    background-color: transparent;
+    cursor: default;
+}
+
+.calendar-day:hover {
+    background-color: #ddd;
+}
+
+.calendar-day.current-day {
+    background-color: #337ab7; /* Highlight color for the current day */
+    color: white;
+    font-weight: bold;
 }
