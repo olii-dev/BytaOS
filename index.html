@@ -66,7 +66,7 @@
 
         <!-- Terminal Window -->
         <div class="window" id="terminal-window">
-            <div class="window-header" onmousedown="startDrag(event, 'terminal-window')">
+            <div class="window-header">
                 <span class="window-title">Terminal</span>
                 <button class="close-button" onclick="closeWindow('Terminal')">&times;</button>
             </div>
@@ -78,7 +78,7 @@
 
 <!-- Notes Window -->
 <div class="window" id="notes-window">
-    <div class="window-header" onmousedown="startDrag(event, 'notes-window')">
+    <div class="window-header">
         <span class="window-title">Notes</span>
         <button class="close-button" onclick="closeWindow('Notes')">&times;</button>
     </div>
@@ -118,7 +118,6 @@
         <button class="close-button" onclick="closeWindow('Files')">&times;</button>
     </div>
     <div class="window-body">
-        <button class="button-3d box" onclick="createFile()">Create New File</button>
         <ul id="files-list" class="box"></ul>
     </div>
 </div>
@@ -159,27 +158,43 @@
         </div>
         <br>
 
-        <!-- About Section -->
-        <div class="settings-option">
-            <p style="text-align: center;" style="font-size: 17px;">BytaOS is your private and secure desktop in the web!<br>© 2025 BytaOS</p>
-        </div>
-        <br>
-
-        <!-- Save Settings Button -->
+                <!-- Save Settings Button -->
         <div class="settings-actions">
             <button class="button-3d save-button" onclick="saveSettings()">Save Settings</button>
+        </div>
+
+        <!-- About Section -->
+        <div class="settings-option" style="display:flex;justify-content:center;align-items:center;">
+            <p style="font-size:17px;margin:0;">© 2025 BytaOS</p>
         </div>
     </div>
 </div>
 
 <!-- Bin Window -->
 <div class="window" id="bin-window" style="display:none;">
-    <div class="window-header">
+        <div class="window-header">
         <span>Bin</span>
         <button class="close-button" onclick="closeWindow('Bin')">&times;</button>
     </div>
     <div class="window-body">
         <ul id="bin-list"></ul>
+    </div>
+</div>
+
+<!-- File Editor Modal -->
+<div class="file-editor-modal" id="file-editor-modal">
+    <div class="file-editor-content">
+        <div class="file-editor-header">
+            <span class="file-editor-title" id="editor-file-name">Untitled</span>
+            <button class="close-button" onclick="closeFileEditor()">&times;</button>
+        </div>
+        <div class="file-editor-body">
+            <textarea id="file-content-editor" placeholder="Enter file content..."></textarea>
+        </div>
+        <div class="file-editor-footer">
+            <button class="button-3d" onclick="closeFileEditor()">Cancel</button>
+            <button class="button-3d" onclick="saveFileContent()">Save</button>
+        </div>
     </div>
 </div>
 
