@@ -1,5 +1,8 @@
 // BytaOS
 
+// Global variable for tracking currently editing file
+let currentEditingFile = null;
+
 function openWindow(name) {
     const windowElement = document.getElementById(`${name.toLowerCase()}-window`);
     if (windowElement) {
@@ -10,12 +13,14 @@ function openWindow(name) {
             icon.style.display = 'block';
         }
 
-        if (name === "Files") {
-            listFiles();
+        // Bring launcher to front with highest z-index
+        if (name === "Launcher") {
+            windowElement.style.zIndex = 9999;
+            loadAppList();
         }
 
-        if (name === "Launcher") {
-            loadAppList();
+        if (name === "Files") {
+            listFiles();
         }
 
         if (name === "Calendar") {
@@ -24,6 +29,10 @@ function openWindow(name) {
 
         if (name === "Bin") {
             listBin();
+        }
+
+        if (name === "Notes") {
+            loadNotes();
         }
     }
 }
@@ -58,34 +67,82 @@ function setBin(bin) {
     localStorage.setItem('bin', JSON.stringify(bin));
 }
 
-function listFiles(folder = null) {
+// Current path for navigation
+let currentPath = [];
+
+function listFiles(folderPath = null) {
     const filesList = document.getElementById('files-list');
     filesList.innerHTML = '';
     const fileSystem = getFileSystem();
-    const currentFolder = folder ? findFolder(folder) : fileSystem;
+    
+    // Update current path
+    if (folderPath === null) {
+        currentPath = [];
+    } else {
+        currentPath = folderPath;
+    }
+    
+    const currentFolder = currentPath.length === 0 ? fileSystem : findFolderByPath(currentPath);
 
-    if (folder) {
+    // Add back button if not at root
+    if (currentPath.length > 0) {
         const backButton = document.createElement('button');
-        backButton.textContent = "..";
-        backButton.onclick = () => listFiles();
+        backButton.textContent = "← Back";
+        backButton.onclick = () => {
+            const parentPath = currentPath.slice(0, -1);
+            listFiles(parentPath.length === 0 ? null : parentPath);
+        };
         backButton.classList.add('back-button');
         filesList.appendChild(backButton);
+    }
+    
+    // Add create button at the current location
+    const createButton = document.createElement('button');
+    createButton.textContent = "+ Create New File/Folder";
+    createButton.classList.add('button-3d');
+    createButton.style.marginBottom = '10px';
+    createButton.style.width = '100%';
+    createButton.onclick = () => createFile(currentPath.length > 0 ? currentPath : null);
+    filesList.appendChild(createButton);
+
+    if (currentFolder.length === 0) {
+        const emptyMessage = document.createElement('li');
+        emptyMessage.textContent = 'No files or folders';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.color = '#999';
+        emptyMessage.style.cursor = 'default';
+        filesList.appendChild(emptyMessage);
+        return;
     }
 
     currentFolder.forEach((file, index) => {
         const fileItem = document.createElement('li');
+        
         const fileIcon = document.createElement('img');
-        fileIcon.src = file.type === 'folder' ? 'icons/folder.png' : 'icons/file.png';
+        const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        
+        if (file.type === 'folder') {
+            fileIcon.src = currentTheme === 'dark' ? 'icons/apps-light/folder-light.png' : 'icons/apps/folder.png';
+        } else {
+            fileIcon.src = currentTheme === 'dark' ? 'icons/apps-light/image-light.png' : 'icons/apps/image.png';
+        }
+        
         fileIcon.classList.add('file-icon');
         fileItem.appendChild(fileIcon);
-        fileItem.appendChild(document.createTextNode(file.name));
-        fileItem.onclick = () => openFile(file, index);
+        
+        const fileName = document.createElement('span');
+        fileName.textContent = file.name;
+        fileItem.appendChild(fileName);
+        
+        fileItem.onclick = () => openFile(file, index, currentPath);
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = "Delete";
         deleteButton.onclick = (e) => {
             e.stopPropagation();
-            moveToBin(folder, index);
+            if (confirm(`Are you sure you want to delete "${file.name}"?`)) {
+                moveToBin(currentPath, index);
+            }
         };
         deleteButton.classList.add('delete-button');
         fileItem.appendChild(deleteButton);
@@ -94,56 +151,130 @@ function listFiles(folder = null) {
     });
 }
 
-function createFile(folder = null) {
-    const fileName = prompt("Enter new file or folder name:");
-    if (fileName) {
-        let fileSystem = getFileSystem();
-        const currentFolder = folder ? findFolder(folder) : fileSystem;
-        const type = prompt("Is this a file or a folder? (file/folder)");
-
-        if (!currentFolder.some(file => file.name === fileName)) {
-            currentFolder.push({ name: fileName, type: type === 'folder' ? 'folder' : 'file', content: type === 'folder' ? [] : "" });
-            setFileSystem(fileSystem);
-            listFiles(folder);
-        } else {
-            alert("File or folder already exists!");
-        }
+function createFile(folderPath = null) {
+    const fileName = prompt("Enter file or folder name:");
+    if (!fileName || fileName.trim() === '') {
+        return;
     }
-}
-
-function openFile(file, index, folder = null) {
-    if (file.type === 'folder') {
-        listFiles(file);
+    
+    const trimmedName = fileName.trim();
+    let fileSystem = getFileSystem();
+    
+    // Get the current folder - this returns a reference to the array
+    let currentFolder;
+    if (folderPath && folderPath.length > 0) {
+        currentFolder = fileSystem;
+        // Navigate to the correct folder
+        for (let i = 0; i < folderPath.length; i++) {
+            const folderIndex = currentFolder.findIndex(file => file.name === folderPath[i] && file.type === 'folder');
+            if (folderIndex !== -1) {
+                currentFolder = currentFolder[folderIndex].content;
+            } else {
+                alert("Folder path not found!");
+                return;
+            }
+        }
     } else {
-        const newContent = prompt(`Edit content of ${file.name}:`, file.content);
-        if (newContent !== null) {
-            const fileSystem = getFileSystem();
-            const currentFolder = folder ? findFolder(folder) : fileSystem;
-            currentFolder[index].content = newContent;
-            setFileSystem(fileSystem);
-            listFiles(folder);
-        }
+        currentFolder = fileSystem;
+    }
+    
+    if (currentFolder.some(file => file.name === trimmedName)) {
+        alert("A file or folder with this name already exists!");
+        return;
+    }
+    
+    const type = prompt("Type 'file' for file or 'folder' for folder:", "file");
+    
+    if (type === null) {
+        return;
+    }
+    
+    const isFolder = type.toLowerCase() === 'folder';
+    
+    // Add the new file/folder to the current folder
+    currentFolder.push({ 
+        name: trimmedName, 
+        type: isFolder ? 'folder' : 'file', 
+        content: isFolder ? [] : "",
+        created: new Date().toISOString()
+    });
+    
+    // Save the entire file system
+    setFileSystem(fileSystem);
+    
+    // Refresh the file list
+    listFiles(folderPath);
+}
+
+function openFile(file, index, folderPath = null) {
+    if (file.type === 'folder') {
+        // Navigate into the folder
+        const newPath = folderPath ? [...folderPath, file.name] : [file.name];
+        listFiles(newPath);
+    } else {
+        // Open file editor modal
+        currentEditingFile = {
+            file: file,
+            index: index,
+            folderPath: folderPath
+        };
+        
+        document.getElementById('editor-file-name').textContent = file.name;
+        document.getElementById('file-content-editor').value = file.content || '';
+        document.getElementById('file-editor-modal').classList.add('active');
+        document.getElementById('file-content-editor').focus();
     }
 }
 
-function moveToBin(folder, index) {
+function closeFileEditor() {
+    document.getElementById('file-editor-modal').classList.remove('active');
+    currentEditingFile = null;
+}
+
+function saveFileContent() {
+    if (!currentEditingFile) return;
+    
+    const newContent = document.getElementById('file-content-editor').value;
+    const fileSystem = getFileSystem();
+    const currentFolder = currentEditingFile.folderPath && currentEditingFile.folderPath.length > 0 
+        ? findFolderByPath(currentEditingFile.folderPath) 
+        : fileSystem;
+    
+    currentFolder[currentEditingFile.index].content = newContent;
+    setFileSystem(fileSystem);
+    listFiles(currentEditingFile.folderPath);
+    closeFileEditor();
+}
+
+function moveToBin(folderPath, index) {
     let fileSystem = getFileSystem();
     let bin = getBin();
-    const file = folder ? findFolder(folder)[index] : fileSystem[index];
+    const currentFolder = folderPath && folderPath.length > 0 ? findFolderByPath(folderPath) : fileSystem;
+    const file = currentFolder[index];
 
     bin.push(file);
     setBin(bin);
 
-    if (folder) {
-        const currentFolder = findFolder(folder);
-        currentFolder.splice(index, 1);
-    } else {
-        fileSystem.splice(index, 1);
-    }
-
+    currentFolder.splice(index, 1);
     setFileSystem(fileSystem);
-    listFiles(folder);
+    
+    listFiles(folderPath);
     listBin();
+}
+
+function findFolderByPath(path) {
+    const fileSystem = getFileSystem();
+    let currentFolder = fileSystem;
+    
+    for (let i = 0; i < path.length; i++) {
+        const folderIndex = currentFolder.findIndex(file => file.name === path[i] && file.type === 'folder');
+        if (folderIndex !== -1) {
+            currentFolder = currentFolder[folderIndex].content;
+        } else {
+            return fileSystem; // Return root if path not found
+        }
+    }
+    return currentFolder;
 }
 
 function findFolder(folder) {
@@ -230,37 +361,60 @@ updateClock();
 
 // Drag and Drop Functionality
 let currentWindow = null;
-let startX = 0, startY = 0;
-let startLeft = 0, startTop = 0;
+let offsetX = 0, offsetY = 0;
+let highestZIndex = 1000;
 
 document.addEventListener('mousedown', (e) => {
-    if (e.target.classList.contains('window-header') && !e.target.parentElement.id.includes('launcher')) {
-        currentWindow = e.target.parentElement;
-        startX = e.clientX;
-        startY = e.clientY;
-
+    // Check if click is outside launcher - if so, close it
+    const launcherWindow = document.getElementById('launcher-window');
+    const launcherIcon = document.querySelector('.dock-icon-container[data-name="Launcher"]');
+    
+    if (launcherWindow && launcherWindow.style.display === 'flex') {
+        // Check if click is outside launcher and not on launcher icon
+        if (!launcherWindow.contains(e.target) && !launcherIcon.contains(e.target)) {
+            closeWindow('Launcher');
+        }
+    }
+    
+    // Check if clicked element is window-header or a child of window-header
+    const header = e.target.closest('.window-header');
+    if (header && !header.parentElement.id.includes('launcher')) {
+        currentWindow = header.parentElement;
+        
+        // Bring window to front
+        highestZIndex++;
+        currentWindow.style.zIndex = highestZIndex;
+        
+        // Get the current position and immediately set it to pixels to prevent jumping
         const rect = currentWindow.getBoundingClientRect();
-        startLeft = rect.left;
-        startTop = rect.top;
+        
+        // Convert to pixel positioning if not already
+        if (!currentWindow.style.left || currentWindow.style.left.includes('%')) {
+            currentWindow.style.left = `${rect.left}px`;
+            currentWindow.style.top = `${rect.top}px`;
+        }
+        
+        // Calculate offset from mouse to window's current position
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
 
         currentWindow.classList.add('dragging');
-
         e.preventDefault();
     }
 });
 
 document.addEventListener('mousemove', (e) => {
     if (currentWindow) {
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-
-        let newLeft = startLeft + deltaX;
-        let newTop = startTop + deltaY;
+        // Calculate new position based on mouse position minus the offset
+        let newLeft = e.clientX - offsetX;
+        let newTop = e.clientY - offsetY;
+        
         const windowWidth = currentWindow.offsetWidth;
         const windowHeight = currentWindow.offsetHeight;
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
 
+        // Keep window within screen bounds
         newLeft = Math.max(0, Math.min(newLeft, screenWidth - windowWidth));
         newTop = Math.max(0, Math.min(newTop, screenHeight - windowHeight));
 
@@ -305,18 +459,36 @@ document.querySelectorAll('.dock-icon-container').forEach(icon => {
 // Launcher Search
 // Array of apps for search
 const apps = [
-    { name: 'Launcher', id: 'launcher-window', icon: 'icons/launcher.png' },
     { name: 'Terminal', id: 'terminal-window', icon: 'icons/apps/terminal.png' },
     { name: 'Files', id: 'files-window', icon: 'icons/apps/folder.png' },
     { name: 'Settings', id: 'settings-window', icon: 'icons/apps/settings.png' },
     { name: 'Bin', id: 'bin-window', icon: 'icons/apps/bin.png' },
     { name: 'Notes', id: 'notes-window', icon: 'icons/apps/notes.png' },
-    { name: 'Calendar', id: 'calendar-window', icon: 'icons/apps/calendar.png' },
+    { name: 'Calendar', id: 'calendar-window', icon: 'icons/apps/calendar.svg' },
 ];
+
+// Load all apps in launcher (show first 4, excluding Launcher itself)
+function loadAppList() {
+    const resultsList = document.getElementById('search-results');
+    resultsList.innerHTML = '';
+
+    // Filter out Launcher and take first 4
+    const appsToShow = apps.filter(app => app.name !== 'Launcher').slice(0, 4);
+
+    appsToShow.forEach(app => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<img src="${app.icon}" alt="${app.name} icon" class="launcher-icon"><span>${app.name}</span>`;
+        listItem.addEventListener('click', () => {
+            openWindow(app.name);
+            closeWindow('Launcher'); // Close launcher after opening app
+        });
+        resultsList.appendChild(listItem);
+    });
+}
 
 document.getElementById('search-bar').addEventListener('input', function () {
     const query = this.value.toLowerCase();
-    const results = apps.filter(app => app.name.toLowerCase().startsWith(query));
+    const results = apps.filter(app => app.name.toLowerCase().startsWith(query)).slice(0, 4); // Limit to 4 results
 
     const resultsList = document.getElementById('search-results');
     resultsList.innerHTML = '';
@@ -326,6 +498,7 @@ document.getElementById('search-bar').addEventListener('input', function () {
         listItem.innerHTML = `<img src="${app.icon}" alt="${app.name} icon" class="launcher-icon"><span>${app.name}</span>`;
         listItem.addEventListener('click', () => {
             openWindow(app.name);
+            closeWindow('Launcher'); // Close launcher after opening app
         });
         resultsList.appendChild(listItem);
     });
@@ -419,59 +592,11 @@ document.getElementById('note-content').addEventListener('input', function () {
     document.getElementById('note-content-hidden').value = content;
 });
 
-// Load notes when the Notes window is opened
-document.getElementById('notes-window').addEventListener('load', loadNotes);
+// Load notes when the Notes window is opened (handled in openWindow function)
 
-// Make windows draggable
-function makeDraggable(element) {
-    let isDragging = false;
-    let offsetX, offsetY;
+// Make windows draggable - removed as these functions reference non-existent selectors
 
-    element.querySelector('.title-bar').addEventListener('mousedown', (e) => {
-        isDragging = true;
-        offsetX = e.clientX - element.getBoundingClientRect().left;
-        offsetY = e.clientY - element.getBoundingClientRect().top;
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-        });
-    });
-
-    function onMouseMove(e) {
-        if (isDragging) {
-            element.style.left = `${e.clientX - offsetX}px`;
-            element.style.top = `${e.clientY - offsetY}px`;
-        }
-    }
-}
-
-// Let windows be resizable
-function makeResizable(element) {
-    const resizer = element.querySelector('.resizer');
-    let startX, startY, startWidth, startHeight;
-
-    resizer.addEventListener('mousedown', (e) => {
-        startX = e.clientX;
-        startY = e.clientY;
-        startWidth = parseInt(document.defaultView.getComputedStyle(element).width, 10);
-        startHeight = parseInt(document.defaultView.getComputedStyle(element).height, 10);
-        document.addEventListener('mousemove', resize);
-        document.addEventListener('mouseup', () => {
-            document.removeEventListener('mousemove', resize);
-        });
-    });
-
-    function resize(e) {
-        element.style.width = startWidth + e.clientX - startX + 'px';
-        element.style.height = startHeight + e.clientY - startY + 'px';
-    }
-}
-
-document.querySelectorAll('.window').forEach(windowElement => {
-    makeDraggable(windowElement);
-    makeResizable(windowElement);
-});
+// Let windows be resizable - removed as these functions reference non-existent selectors
 
 // Settings
 function openSettings() {
@@ -509,14 +634,53 @@ function loadSettings() {
 function applyTheme(theme) {
     document.body.className = '';
     document.body.classList.add(theme);
+    
+    // Switch menu logo based on theme
+    const menuLogo = document.querySelector('.menu-logo');
+    if (menuLogo) {
+        if (theme === 'dark') {
+            menuLogo.src = 'icons/byta-logo-white.png';
+        } else {
+            menuLogo.src = 'icons/byta-logo-black.png';
+        }
+    }
+    
+    // Switch dock app icons based on theme
+    const dockIcons = {
+        'Terminal': theme === 'dark' ? 'icons/apps-light/terminal-light.png' : 'icons/apps/terminal.png',
+        'Notes': theme === 'dark' ? 'icons/apps-light/notes-light.png' : 'icons/apps/notes.png',
+        'Files': theme === 'dark' ? 'icons/apps-light/folder-light.png' : 'icons/apps/folder.png',
+        'Settings': theme === 'dark' ? 'icons/apps-light/settings-light.png' : 'icons/apps/settings.png',
+        'Calendar': theme === 'dark' ? 'icons/apps-light/calendar-light.png' : 'icons/apps/calendar.svg',
+        'Launcher': theme === 'dark' ? 'icons/apps-light/launcher-light.png' : 'icons/launcher.png'
+    };
+    
+    // Update dock icons
+    document.querySelectorAll('.dock-icon-container').forEach(container => {
+        const appName = container.getAttribute('data-name');
+        const icon = container.querySelector('.dock-icon');
+        if (icon && dockIcons[appName]) {
+            icon.src = dockIcons[appName];
+        }
+    });
+    
+    // Update apps array for launcher
+    apps.forEach(app => {
+        if (app.name === 'Terminal') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/terminal-light.png' : 'icons/apps/terminal.png';
+        } else if (app.name === 'Notes') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/notes-light.png' : 'icons/apps/notes.png';
+        } else if (app.name === 'Files') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/folder-light.png' : 'icons/apps/folder.png';
+        } else if (app.name === 'Settings') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/settings-light.png' : 'icons/apps/settings.png';
+        } else if (app.name === 'Bin') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/bin-light.png' : 'icons/apps/bin.png';
+        } else if (app.name === 'Calendar') {
+            app.icon = theme === 'dark' ? 'icons/apps-light/calendar-light.png' : 'icons/apps/calendar.svg';
+        }
+    });
 }
-
-const settingsIcon = document.createElement('div');
-settingsIcon.className = 'dock-icon-container';
-settingsIcon.setAttribute('data-name', 'Settings');
-settingsIcon.innerHTML = `<img src="icons/settings.png" alt="Settings" class="dock-icon">`;
-settingsIcon.addEventListener('click', openSettings);
-document.querySelector('.dock-icons').appendChild(settingsIcon);
 
 document.addEventListener('DOMContentLoaded', loadSettings);
 
@@ -567,23 +731,50 @@ function listBin() {
     binList.innerHTML = '';
     const bin = getBin();
 
+    if (bin.length === 0) {
+        const emptyMessage = document.createElement('li');
+        emptyMessage.textContent = 'Bin is empty';
+        emptyMessage.style.textAlign = 'center';
+        emptyMessage.style.color = '#999';
+        emptyMessage.style.cursor = 'default';
+        binList.appendChild(emptyMessage);
+        return;
+    }
+
     bin.forEach((file, index) => {
         const fileItem = document.createElement('li');
+        
         const fileIcon = document.createElement('img');
-        fileIcon.src = file.type === 'folder' ? 'icons/folder.png' : 'icons/file.png';
+        const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+        
+        if (file.type === 'folder') {
+            fileIcon.src = currentTheme === 'dark' ? 'icons/apps-light/folder-light.png' : 'icons/apps/folder.png';
+        } else {
+            fileIcon.src = currentTheme === 'dark' ? 'icons/apps-light/image-light.png' : 'icons/apps/image.png';
+        }
+        
         fileIcon.classList.add('file-icon');
         fileItem.appendChild(fileIcon);
-        fileItem.appendChild(document.createTextNode(file.name));
+        
+        const fileName = document.createElement('span');
+        fileName.textContent = file.name;
+        fileItem.appendChild(fileName);
 
         const restoreButton = document.createElement('button');
         restoreButton.textContent = "Restore";
-        restoreButton.onclick = () => restoreFromBin(index);
+        restoreButton.onclick = () => {
+            restoreFromBin(index);
+        };
         restoreButton.classList.add('restore-button');
         fileItem.appendChild(restoreButton);
 
         const deleteButton = document.createElement('button');
-        deleteButton.textContent = "Delete Permanently";
-        deleteButton.onclick = () => deletePermanently(index);
+        deleteButton.textContent = "Delete";
+        deleteButton.onclick = () => {
+            if (confirm(`Permanently delete "${file.name}"? This cannot be undone!`)) {
+                deletePermanently(index);
+            }
+        };
         deleteButton.classList.add('delete-button');
         fileItem.appendChild(deleteButton);
 
@@ -612,3 +803,19 @@ function deletePermanently(index) {
     setBin(bin);
     listBin();
 }
+// Close file editor modal on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('file-editor-modal');
+        if (modal && modal.classList.contains('active')) {
+            closeFileEditor();
+        }
+    }
+});
+
+// Close file editor modal when clicking outside
+document.getElementById('file-editor-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'file-editor-modal') {
+        closeFileEditor();
+    }
+});
